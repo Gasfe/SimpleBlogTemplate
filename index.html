@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<!-- A ti, minha rapariga dos cabelos ruivos -->
+<html>
+<head>
+    <title>:: occasional texting ::</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro" rel="stylesheet">
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+        var showText = function (target, message, index, interval) {
+        if (index < message.length) {
+            $(target).append(message[index++]);
+            setTimeout(function () { showText(target, message, index, interval); }, interval);
+            }
+        }
+
+    </script>
+    <style>
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            margin-top: 15px;
+            background-color: #f7f7f7;
+        }
+        span {
+            font-size: 18px;
+        }
+        .subtitle {
+            font-size: 18px;
+            color: #777777;
+            margin-top: 5px;
+            margin-bottom: 3%;
+        }
+        #sidebar {
+            margin-top: 2%;
+            text-align: center;
+        }
+        #navbar {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            font-size: 18px;
+            text-align: right;
+            margin-right: 20%;
+        }
+        li {
+            margin-bottom: 2%;
+        }
+        li:hover {
+            color: #777;
+        }
+        h1 {
+            margin-bottom: 2%;
+        }
+        a:hover, a:visited, a:link, a:active {
+            text-decoration: none;
+            color: #000;
+        }
+    </style>
+    </head>
+    
+<?php
+    $textsLocation = "./texts";
+    $textsWithDots = scandir($textsLocation);
+    $textsInside = [];
+    $utfTitle = [];
+    for ($x=2; $x <= count($textsWithDots)-1; $x++) {
+        $ficheiro = file_get_contents("./texts/" . $textsWithDots[$x]);
+        array_push($textsInside, $ficheiro);
+        $withoutExt = preg_replace  ('/\\.[^.\\s]{3,4}$/', '', $textsWithDots[$x]);
+        array_push($utfTitle, utf8_encode($withoutExt));
+    }
+?>
+    
+    <script type="text/javascript">
+        var ficheiros = <?php echo json_encode($textsInside); ?>;
+        var selectedText = ficheiros[0];
+        var nomeFicheiros = <?php echo json_encode($utfTitle); ?>;
+        var msg = selectedText;
+        var printText = function (id, message) {
+            $("#title").html("");
+            $("#msg").html("");
+            $("#title").html(nomeFicheiros[id]);
+            //showText("#msg", ficheiros[id], 0, 0);
+            $("#msg").html(ficheiros[id]);
+    }
+    </script>
+    
+    <div class="col-sm-3" id="sidebar">
+        <h2>:: Occasional texting ::</h2>
+        <ul id="navbar">
+        <!-- Inserir geração de títulos -->
+<?php
+    $ficheirosWithoutExt = [];
+    for ($x=2; $x<=count($textsWithDots)-1; $x++) {
+        $withoutExt = preg_replace('/\\.[^.\\s]{3,4}$/', '', $textsWithDots[$x]);
+        array_push($ficheirosWithoutExt, $withoutExt);
+        $index = $x-2;
+        echo "<li id='$index' onclick='javascript:printText(id);'>" . utf8_encode($withoutExt) . "</li>";
+    }
+?>
+        </ul>
+    </div>
+    <div class="col-sm-6">
+<?php echo "<h1 id='title'>" . utf8_encode($ficheirosWithoutExt[0]) . "</h1>";
+    $ficheirosData = [];
+    for ($x=2; $x<=count($textsWithDots)-1; $x++) {
+        $date = filemtime("./texts/" . $textsWithDots[$x]);
+        $dateEncoded = date ("F d Y", $date);
+        array_push($ficheirosData, $date);
+}
+?>
+        <h2 class="subtitle">30 de setembro de 2017</h2>
+        <span id="msg"></span>
+    </div>
+    <div class="col-sm-3"></div>
+
+    <script>
+        $(function () {
+            $("#msg").html(msg);
+            //showText("#msg", msg, 0, 0);   
+        });
+    </script>
+</body>
+</html>
