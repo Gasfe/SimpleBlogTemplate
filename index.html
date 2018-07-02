@@ -13,7 +13,8 @@
         var showText = function (target, message, index, interval) {
         if (index < message.length) {
             $(target).append(message[index++]);
-            setTimeout(function () { showText(target, message, index, interval); }, interval);
+            setTimeout(function () { 
+                showText(target, message, index, interval); }, interval);
             }
         }
 
@@ -58,19 +59,29 @@
             text-decoration: none;
             color: #000;
         }
+        
     </style>
     </head>
     
 <?php
+    setlocale(LC_TIME, 'pt_BR', 'pt_BR.utf-8', 'pt_BR.utf-8', 'portuguese');
+
     $textsLocation = "./texts";
     $textsWithDots = scandir($textsLocation);
     $textsInside = [];
     $utfTitle = [];
+    $datas = [];
+
     for ($x=2; $x <= count($textsWithDots)-1; $x++) {
         $ficheiro = file_get_contents("./texts/" . $textsWithDots[$x]);
+        $ficheiro = utf8_encode($ficheiro);
+        $ficheiro = utf8_decode($ficheiro);
         array_push($textsInside, $ficheiro);
         $withoutExt = preg_replace  ('/\\.[^.\\s]{3,4}$/', '', $textsWithDots[$x]);
         array_push($utfTitle, utf8_encode($withoutExt));
+        $date = filemtime("./texts/" . $textsWithDots[$x]);
+        $dateEncoded = strftime('%d de %B de %Y', $date);
+        array_push($datas, $dateEncoded);
     }
 ?>
     
@@ -78,11 +89,13 @@
         var ficheiros = <?php echo json_encode($textsInside); ?>;
         var selectedText = ficheiros[0];
         var nomeFicheiros = <?php echo json_encode($utfTitle); ?>;
+        var datasFicheiros = <?php echo json_encode($datas); ?>;
         var msg = selectedText;
         var printText = function (id, message) {
             $("#title").html("");
             $("#msg").html("");
             $("#title").html(nomeFicheiros[id]);
+            $("#date").html(datasFicheiros[id]);
             //showText("#msg", ficheiros[id], 0, 0);
             $("#msg").html(ficheiros[id]);
     }
@@ -94,35 +107,31 @@
         <!-- Inserir geração de títulos -->
 <?php
     $ficheirosWithoutExt = [];
+    
     for ($x=2; $x<=count($textsWithDots)-1; $x++) {
         $withoutExt = preg_replace('/\\.[^.\\s]{3,4}$/', '', $textsWithDots[$x]);
         array_push($ficheirosWithoutExt, $withoutExt);
         $index = $x-2;
+
         echo "<li id='$index' onclick='javascript:printText(id);'>" . utf8_encode($withoutExt) . "</li>";
     }
 ?>
         </ul>
     </div>
     <div class="col-sm-6">
-<?php echo "<h1 id='title'>" . utf8_encode($ficheirosWithoutExt[0]) . "</h1>";
-    $ficheirosData = [];
-    for ($x=2; $x<=count($textsWithDots)-1; $x++) {
-        $date = filemtime("./texts/" . $textsWithDots[$x]);
-        $dateEncoded = date ("F d Y", $date);
-        array_push($ficheirosData, $date);
-}
-?>
-        <h2 class="subtitle">30 de setembro de 2017</h2>
-        <span id="msg"></span>
+        <h1 id='title'></h1>
+            <h2 class="subtitle" id="date"></h2>      
+                <span id="msg"></span>
     </div>
     <div class="col-sm-3"></div>
-
     <script>
         $(function () {
+            $("#title").html(nomeFicheiros[0]);
+            $("#date").html(datasFicheiros[0]);
             $("#msg").html(msg);
             //showText("#msg", msg, 0, 0);   
         });
     </script>
-<!-- E chegámos ao fim.-->
+        <div id="nothing" class="col-sm-3"></div>
 </body>
 </html>
